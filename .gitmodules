@@ -1,0 +1,3 @@
+[submodule "gym_xarmlite6"]
+	path = gym_xarmlite6
+	url = git@github.com:eufrizz/gym_xarmlite6.git
