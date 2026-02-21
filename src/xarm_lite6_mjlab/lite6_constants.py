@@ -7,7 +7,7 @@ from mjlab.actuator import XmlPositionActuatorCfg
 from mjlab.entity import EntityArticulationInfoCfg, EntityCfg
 from mjlab.utils.spec_config import CollisionCfg
 
-from gym_xarmlite6.gym_lite6.model import get_spec
+from gym_xarmlite6.model import get_spec
 
 ##
 # Collision config.

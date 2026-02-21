@@ -16,6 +16,9 @@ required-markers = [
     "platform_machine == 'x86_64' and sys_platform == 'linux'",
 ]
 
+[options]
+prerelease-mode = "allow"
+
 [[package]]
 name = "absl-py"
 version = "2.4.0"
@@ -786,7 +789,7 @@ wheels = [
 [[package]]
 name = "gym-xarmlite6"
 version = "0.0.1"
-source = { directory = "gym_xarmlite6" }
+source = { editable = "gym_xarmlite6" }
 dependencies = [
     { name = "gymnasium" },
     { name = "mujoco" },
@@ -3524,7 +3527,7 @@ dev = [
 
 [package.metadata]
 requires-dist = [
-    { name = "gym-xarmlite6", directory = "gym_xarmlite6" },
+    { name = "gym-xarmlite6", editable = "gym_xarmlite6" },
     { name = "mjlab", specifier = ">=1.1.1" },
 ]
 
