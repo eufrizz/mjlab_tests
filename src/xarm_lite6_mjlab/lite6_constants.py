@@ -111,7 +111,7 @@ def _compute_action_scale() -> dict[str, float]:
     joint_name = mujoco.mj_id2name(m, mujoco.mjtObj.mjOBJ_JOINT, joint_id)
     kp = m.actuator_gainprm[i, 0]
     effort_limit = m.actuator_forcerange[i, 1]
-    scale[joint_name] = np.float32(0.25 * effort_limit / kp)
+    scale[joint_name] = 0.5 #np.float32(2.0 * effort_limit / kp)
   return scale
 
 
