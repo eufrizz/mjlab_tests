@@ -96,7 +96,7 @@ def get_lite6_robot_cfg() -> EntityCfg:
 ##
 # Action scale.
 #
-# Derived from the compiled model: scale = 0.25 * effort_limit / kp
+# Map actions from [-1, 1] to full joint range
 # Only group 1 (position) actuators are included; group 2 (velocity) and
 # group 0 (gripper motor) are excluded as they are not part of the action space.
 ##
@@ -109,9 +109,8 @@ def _compute_action_scale() -> dict[str, float]:
       continue
     joint_id = m.actuator_trnid[i, 0]
     joint_name = mujoco.mj_id2name(m, mujoco.mjtObj.mjOBJ_JOINT, joint_id)
-    kp = m.actuator_gainprm[i, 0]
-    effort_limit = m.actuator_forcerange[i, 1]
-    scale[joint_name] = 0.5 #np.float32(2.0 * effort_limit / kp)
+    joint_range = (m.actuator_ctrlrange[i, 1] - m.actuator_ctrlrange[i, 0]) / 2
+    scale[joint_name] = np.float32(joint_range)
   return scale
 
 
