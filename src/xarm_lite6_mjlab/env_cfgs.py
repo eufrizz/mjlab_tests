@@ -65,6 +65,13 @@ def lite6_lift_cube_env_cfg(
       assert isinstance(sensor, ContactSensorCfg)
       sensor.primary.pattern = "link6"
 
+  # Restrict joint_pos_limits and joint_vel_hinge to arm joints only.
+  # The gripper fingers are not part of the action space and their limits are
+  # tiny (±8mm), so including them would spuriously penalise normal gripper motion.
+  arm_joints = "(joint1|joint2|joint3|joint4|joint5|joint6)"
+  cfg.rewards["joint_pos_limits"].params["asset_cfg"].joint_names = (arm_joints,)
+  cfg.rewards["joint_vel_hinge"].params["asset_cfg"].joint_names = (arm_joints,)
+
   cfg.viewer.body_name = "link_base"
 
   # Apply play mode overrides.
