@@ -17,7 +17,7 @@ from mjlab.tasks.manipulation.lift_cube_env_cfg import make_lift_cube_env_cfg
 from .lite6_constants import LITE6_ACTION_SCALE, get_lite6_robot_cfg
 
 
-def get_cube_spec(cube_size: float = 0.02, mass: float = 0.05) -> mujoco.MjSpec:
+def get_cube_spec(cube_size: float = 0.015, mass: float = 0.05) -> mujoco.MjSpec:
   spec = mujoco.MjSpec()
   body = spec.worldbody.add_body(name="cube")
   body.add_freejoint(name="cube_joint")
