@@ -49,6 +49,7 @@ def lite6_lift_cube_env_cfg(
     "end_effector",
   )
   cfg.rewards["lift"].params["asset_cfg"].site_names = ("end_effector",)
+  cfg.rewards["lift"].params["reaching_std"] = 0.01 # low std dev to make it get closer to the object
 
   # Fingertip geom names in the Lite6 XML.
   fingertip_geoms = "(gripper_left_finger|gripper_right_finger)"
