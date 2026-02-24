@@ -36,9 +36,9 @@ def lite6_lift_cube_ppo_runner_cfg() -> RslRlOnPolicyRunnerCfg:
       max_grad_norm=1.0,
     ),
     experiment_name="lite6_lift_cube",
-    save_interval=100,
+    save_interval=50,
     num_steps_per_env=24,
-    max_iterations=5_000,
+    max_iterations=2_000,
   )
 
 
