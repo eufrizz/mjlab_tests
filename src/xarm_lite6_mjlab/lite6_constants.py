@@ -110,7 +110,7 @@ def _compute_action_scale() -> dict[str, float]:
     joint_id = m.actuator_trnid[i, 0]
     joint_name = mujoco.mj_id2name(m, mujoco.mjtObj.mjOBJ_JOINT, joint_id)
     # TODO: have cut down to half range (/4) instead of full range (/2) for better resolution, less jitter
-    joint_range = (m.actuator_ctrlrange[i, 1] - m.actuator_ctrlrange[i, 0]) / 4
+    joint_range = (m.actuator_ctrlrange[i, 1] - m.actuator_ctrlrange[i, 0]) / 8
     scale[joint_name] = np.float32(joint_range)
   return scale
 
