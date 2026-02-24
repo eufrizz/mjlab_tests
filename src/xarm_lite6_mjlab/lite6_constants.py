@@ -59,7 +59,7 @@ FULL_COLLISION = CollisionCfg(
 
 HOME_KEYFRAME = EntityCfg.InitialStateCfg(
   pos=(0.0, 0.0, 0.0),
-  joint_pos={"joint1": 0.126, "joint2": -0.236, "joint3": 0.65, "joint4": 0, "joint5": 0.2},
+  joint_pos={"joint1": 0.126, "joint2": -0.236, "joint3": 0.65, "joint4": 0, "joint5": 0.2, "joint6": 0., "gripper_left_finger": 0.0},
   joint_vel={".*": 0.0},
 )
 
@@ -78,7 +78,7 @@ def _get_spec() -> mujoco.MjSpec:
 
 ARTICULATION = EntityArticulationInfoCfg(
   actuators=(
-    XmlPositionActuatorCfg(target_names_expr=("joint1", "joint2", "joint3", "joint4", "joint5", "joint6")),
+    XmlPositionActuatorCfg(target_names_expr=("joint1", "joint2", "joint3", "joint4", "joint5", "joint6", "gripper_left_finger")),
   ),
   soft_joint_pos_limit_factor=0.9,
 )
@@ -105,13 +105,14 @@ def _compute_action_scale() -> dict[str, float]:
   m = _get_spec().compile()
   scale = {}
   for i in range(m.nu):
-    if m.actuator_group[i] != 1:
-      continue
     joint_id = m.actuator_trnid[i, 0]
     joint_name = mujoco.mj_id2name(m, mujoco.mjtObj.mjOBJ_JOINT, joint_id)
-    # TODO: have cut down to half range (/4) instead of full range (/2) for better resolution, less jitter
-    joint_range = (m.actuator_ctrlrange[i, 1] - m.actuator_ctrlrange[i, 0]) / 8 if joint_name != 'left_finger' else 1.0
-    scale[joint_name] = np.float32(joint_range)
+    if m.actuator_group[i] != 1: # gripper
+      scale[joint_name] = np.float32(1.0) 
+    else:
+      # TODO: have cut down to half range (/4) instead of full range (/2) for better resolution, less jitter
+      joint_range = (m.actuator_ctrlrange[i, 1] - m.actuator_ctrlrange[i, 0]) / 8
+      scale[joint_name] = np.float32(joint_range)
   return scale
 
 
