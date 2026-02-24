@@ -59,7 +59,7 @@ FULL_COLLISION = CollisionCfg(
 
 HOME_KEYFRAME = EntityCfg.InitialStateCfg(
   pos=(0.0, 0.0, 0.0),
-  joint_pos={"joint1": 0.126, "joint2": -0.236, "joint3": 0.65, "joint4": 0, "joint5": 0.2, "joint6": 0., "gripper_left_finger": 0.0},
+  joint_pos={"joint1": 0.126, "joint2": -0.236, "joint3": 0.65, "joint4": 0, "joint5": 0.2, "joint6": 0., "gripper_left_finger": -0.0081},
   joint_vel={".*": 0.0},
 )
 
