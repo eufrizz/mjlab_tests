@@ -1,20 +1,29 @@
-from typing import Any, Literal
+from __future__ import annotations
 
+from typing import TYPE_CHECKING, Any, Literal
+
+import torch
 import mujoco
 
-from mjlab.entity import EntityCfg
+from mjlab.entity import Entity, EntityCfg
 from mjlab.envs import ManagerBasedRlEnvCfg
 from mjlab.envs.mdp.actions import JointPositionActionCfg
 from mjlab.managers import (
   ObservationGroupCfg,
   ObservationTermCfg,
 )
+from mjlab.managers.reward_manager import RewardTermCfg
 from mjlab.managers.scene_entity_config import SceneEntityCfg
 from mjlab.sensor import CameraSensorCfg, ContactSensorCfg
 from mjlab.tasks.manipulation import mdp as manipulation_mdp
 from mjlab.tasks.manipulation.lift_cube_env_cfg import make_lift_cube_env_cfg
 
 from .lite6_constants import LITE6_ACTION_SCALE, get_lite6_robot_cfg
+
+if TYPE_CHECKING:
+  from mjlab.envs import ManagerBasedRlEnv
+
+_DEFAULT_ASSET_CFG = SceneEntityCfg("robot")
 
 
 def get_cube_spec(cube_size: float = 0.014, mass: float = 0.05) -> mujoco.MjSpec:
@@ -29,6 +38,44 @@ def get_cube_spec(cube_size: float = 0.014, mass: float = 0.05) -> mujoco.MjSpec
     rgba=(0.8, 0.2, 0.2, 1.0),
   )
   return spec
+
+
+def gripper_close_reward(
+  env: ManagerBasedRlEnv,
+  object_name: str,
+  std: float,
+  gripper_actuator_name: str = "gripper",
+  asset_cfg: SceneEntityCfg = _DEFAULT_ASSET_CFG,
+) -> torch.Tensor:
+  """Reward applying a closing (pinching) force to the gripper when the EE is near the cube.
+
+  Shape: reaching(ee, cube) × normalised_pinch_force
+
+  - reaching: Gaussian kernel on EE-to-cube distance, peaks at 1 within ~std of cube.
+  - normalised_pinch_force: the motor ctrl signal divided by its max force, clamped to
+    [0, 1]. For the motor actuator, ctrl IS the commanded force directly — positive
+    values close the gripper, negative values open it.
+
+  asset_cfg must specify site_names for the EE site.
+  """
+  robot: Entity = env.scene[asset_cfg.name]
+  obj: Entity = env.scene[object_name]
+
+  # Reaching: Gaussian over squared EE-to-cube distance.
+  ee_pos_w = robot.data.site_pos_w[:, asset_cfg.site_ids].squeeze(1)  # (B, 3)
+  obj_pos_w = obj.data.root_link_pos_w  # (B, 3)
+  reach_sq = torch.sum(torch.square(ee_pos_w - obj_pos_w), dim=-1)  # (B,)
+  reaching = torch.exp(-reach_sq / std**2)  # (B,)
+
+  # Pinch force: for the motor actuator, ctrl == commanded force in Newtons.
+  # Positive = closing, negative = opening. Normalise by max force and clamp to [0, 1].
+  sim = env.unwrapped.sim
+  act_id = mujoco.mj_name2id(sim.mj_model, mujoco.mjtObj.mjOBJ_ACTUATOR, gripper_actuator_name)
+  ctrl_max = float(sim.mj_model.actuator_forcerange[act_id, 1])  # e.g. 10 N
+  gripper_ctrl = sim.data.ctrl[:, act_id]  # (B,)
+  pinch = gripper_ctrl.clamp(-1., 1.)# (gripper_ctrl / ctrl_max).clamp(0.0, 1.0)
+
+  return pinch #reaching * pinch
 
 
 def lite6_lift_cube_env_cfg(
@@ -49,10 +96,22 @@ def lite6_lift_cube_env_cfg(
     "end_effector",
   )
   cfg.rewards["lift"].params["asset_cfg"].site_names = ("end_effector",)
-  cfg.rewards["lift"].params["reaching_std"] = 0.1 # low std dev to make it get closer to the object
+  cfg.rewards["lift"].params["reaching_std"] = 0.1
   cfg.rewards["lift"].weight = 1.5
-  
+
   cfg.rewards["lift_precise"].weight = 1.5
+
+  # Reward closing the gripper when the EE is near the cube.
+  cfg.rewards["gripper_close"] = RewardTermCfg(
+    func=gripper_close_reward,
+    weight=0.05,
+    params={
+      "object_name": "cube",
+      "std": 0.1,
+      "gripper_actuator_name": "gripper",
+      "asset_cfg": SceneEntityCfg("robot", site_names=("end_effector",)),
+    },
+  )
 
   # Fingertip geom names in the Lite6 XML.
   fingertip_geoms = "(gripper_left_finger|gripper_right_finger)"
