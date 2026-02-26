@@ -105,7 +105,7 @@ def lite6_lift_cube_env_cfg(
   # Reward closing the gripper when the EE is near the cube.
   cfg.rewards["gripper_close"] = RewardTermCfg(
     func=gripper_close_reward,
-    weight=0.5,
+    weight=0.2,
     params={
       "object_name": "cube",
       "std": 0.1,
@@ -152,7 +152,7 @@ def lite6_lift_cube_env_cfg(
     name="self_collision",
     primary=ContactMatch(
       mode="body",
-      pattern="(link1|link2|link3|link4|link5)",
+      pattern="(link.*|gripper_lite_body_c)",
       entity="robot",
     ),
     secondary=ContactMatch(mode="subtree", pattern="link_base", entity="robot"),

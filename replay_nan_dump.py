@@ -142,11 +142,32 @@ def key_cb(keycode):
         step_delay = max(step_delay / 1.5, 1 / 120)
         print(f"  [faster → {1/step_delay:.1f} fps]")
 
+def geom_name(model: mujoco.MjModel, geom_id: int) -> str:
+    name = mujoco.mj_id2name(model, mujoco.mjtObj.mjOBJ_GEOM, geom_id)
+    return name if name else f"geom{geom_id}"
+
+def print_contacts(model: mujoco.MjModel, data: mujoco.MjData) -> None:
+    if data.ncon == 0:
+        return
+    lines = []
+    for k in range(data.ncon):
+        c = data.contact[k]
+        # contact force in contact frame; element 0 is normal force
+        force = np.zeros(6)
+        mujoco.mj_contactForce(model, data, k, force)
+        normal_force = abs(force[0])
+        g1 = geom_name(model, c.geom1)
+        g2 = geom_name(model, c.geom2)
+        lines.append(f"    {g1} ↔ {g2}  dist={c.dist:+.4f}  F={normal_force:.2f}N")
+    print(f"  contacts ({data.ncon}):")
+    print("\n".join(lines))
+
 print("Controls:  Space=pause  r=restart  [=slower  ]=faster  Esc=quit")
 print("Opening viewer…\n")
 
 with mujoco.viewer.launch_passive(mj_model, mj_data, key_callback=key_cb) as viewer:
     i = 0
+    prev_ncon = 0
     while viewer.is_running():
         if do_restart:
             i, do_restart = 0, False
@@ -158,8 +179,14 @@ with mujoco.viewer.launch_passive(mj_model, mj_data, key_callback=key_cb) as vie
             viewer.sync()
 
             suffix = "  ← last before NaN!" if i == T - 1 else ""
-            print(f"\r  step {step_nums[i]:>6d}  [{i+1:>3d}/{T}]{suffix}   ",
-                  end="", flush=True)
+            # Print contact info whenever it changes or on the last step
+            if mj_data.ncon != prev_ncon or i == T - 1:
+                print(f"\nstep {step_nums[i]:>6d}  [{i+1:>3d}/{T}]{suffix}")
+                print_contacts(mj_model, mj_data)
+                prev_ncon = mj_data.ncon
+            else:
+                print(f"\r  step {step_nums[i]:>6d}  [{i+1:>3d}/{T}]  {mj_data.ncon} contacts{suffix}   ",
+                      end="", flush=True)
 
             i = (i + 1) % T
             time.sleep(step_delay)
