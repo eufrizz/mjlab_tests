@@ -14,7 +14,8 @@ from mjlab.managers import (
 )
 from mjlab.managers.reward_manager import RewardTermCfg
 from mjlab.managers.scene_entity_config import SceneEntityCfg
-from mjlab.sensor import CameraSensorCfg, ContactSensorCfg
+from mjlab.managers.termination_manager import TerminationTermCfg
+from mjlab.sensor import CameraSensorCfg, ContactMatch, ContactSensorCfg
 from mjlab.tasks.manipulation import mdp as manipulation_mdp
 from mjlab.tasks.manipulation.lift_cube_env_cfg import make_lift_cube_env_cfg
 
@@ -136,6 +137,26 @@ def lite6_lift_cube_env_cfg(
   cfg.rewards["joint_vel_hinge"].params["asset_cfg"].joint_names = (arm_joints,)
 
   cfg.viewer.body_name = "link_base"
+
+  # Self-collision sensor: fire when any non-EE arm link contacts another
+  # non-adjacent robot body.  The secondary is filtered to the robot entity's
+  # own subtree, so cube/terrain contacts do NOT trigger this sensor.
+  # MuJoCo already suppresses parent-child contacts at the physics level, so
+  # only genuinely dangerous self-collisions reach the sensor.
+  self_collision_cfg = ContactSensorCfg(
+    name="self_collision",
+    primary=ContactMatch(mode="subtree", pattern="link_base", entity="robot"),
+    secondary=ContactMatch(mode="subtree", pattern="link_base", entity="robot"),
+    fields=("found",),
+    reduce="none",
+    num_slots=1,
+  )
+  cfg.scene.sensors = (cfg.scene.sensors or ()) + (self_collision_cfg,)
+
+  cfg.terminations["self_collision"] = TerminationTermCfg(
+    func=manipulation_mdp.illegal_contact,
+    params={"sensor_name": "self_collision"},
+  )
 
   # Apply play mode overrides.
   if play:

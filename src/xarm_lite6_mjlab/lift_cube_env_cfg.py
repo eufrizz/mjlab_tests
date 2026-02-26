@@ -78,6 +78,9 @@ def make_lift_cube_env_cfg() -> ManagerBasedRlEnvCfg:
         z=(0.02, 0.05),
         yaw=(-3.14, 3.14),
       ),
+      target_position_range = LiftingCommandCfg.TargetPositionRangeCfg(
+        x=(0.2, 0.4), y=(-0.15, 0.15), z=(0.15, 0.3),
+      )
     )
   }
 

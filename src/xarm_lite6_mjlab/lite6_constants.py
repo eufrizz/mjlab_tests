@@ -113,7 +113,6 @@ def _compute_action_scale() -> dict[str, float]:
       # TODO: have cut down to half range (/4) instead of full range (/2) for better resolution, less jitter
       joint_range = (m.actuator_ctrlrange[i, 1] - m.actuator_ctrlrange[i, 0]) / 8
     scale[joint_name] = np.float32(joint_range)
-  print(scale)
   return scale
 
 
