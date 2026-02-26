@@ -42,7 +42,17 @@ GRIPPER_ONLY_COLLISION = CollisionCfg(
 # Slower simulation but more physically accurate.
 FULL_COLLISION = CollisionCfg(
   geom_names_expr=(".*",),
-  # contype/conaffinity left at XML defaults (all 1).
+  conaffinity={
+    # The finger _base geoms are siblings (not parent-child) so MuJoCo does not
+    # suppress their mutual contact. At certain gripper positions they overlap,
+    # generating 100kN+ spikes that cause NaN explosions in training.
+    # Setting conaffinity=2 (bit 1 unset) means they can only be "hit" by geoms
+    # with contype bit 1 set — which the other _base geom doesn't initiate
+    # (contype=1 & conaffinity=2 = 0). All other geoms (arm links, cube, terrain)
+    # keep conaffinity=1, so contacts with them still fire normally.
+    "(gripper_left_finger_base|gripper_right_finger_base)": 2,
+    ".*": 1,
+  },
   condim={
     "(gripper_left_finger|gripper_right_finger)": 4,
     ".*": 3,
