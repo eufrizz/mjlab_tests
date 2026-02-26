@@ -74,9 +74,8 @@ def gripper_close_reward(
   act_id = mujoco.mj_name2id(sim.mj_model, mujoco.mjtObj.mjOBJ_ACTUATOR, gripper_actuator_name)
   ctrl_max = float(sim.mj_model.actuator_forcerange[act_id, 1])  # e.g. 10 N
   gripper_ctrl = sim.data.ctrl[:, act_id]  # (B,)
-  pinch = gripper_ctrl.clamp(-1., 1.)# (gripper_ctrl / ctrl_max).clamp(0.0, 1.0)
-
-  return pinch #reaching * pinch
+  pinch = gripper_ctrl.clamp(-1, 1.) #(gripper_ctrl / ctrl_max).clamp(0.0, 1.0)
+  return reaching * pinch
 
 
 def lite6_lift_cube_env_cfg(
@@ -105,7 +104,7 @@ def lite6_lift_cube_env_cfg(
   # Reward closing the gripper when the EE is near the cube.
   cfg.rewards["gripper_close"] = RewardTermCfg(
     func=gripper_close_reward,
-    weight=0.05,
+    weight=0.2,
     params={
       "object_name": "cube",
       "std": 0.1,
