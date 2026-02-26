@@ -122,7 +122,7 @@ def lite6_lift_cube_env_cfg(
       "reward_name": "gripper_close",
       "weight_stages": [
         {"step": 0, "weight": 0.0},
-        {"step": 200 * 24, "weight": 0.1},
+        {"step": 200 * 24, "weight": 0.05},
       ],
     },
   )
