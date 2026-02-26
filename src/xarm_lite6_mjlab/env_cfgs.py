@@ -105,7 +105,7 @@ def lite6_lift_cube_env_cfg(
   # Reward closing the gripper when the EE is near the cube.
   cfg.rewards["gripper_close"] = RewardTermCfg(
     func=gripper_close_reward,
-    weight=0.2,
+    weight=0.1,
     params={
       "object_name": "cube",
       "std": 0.1,
