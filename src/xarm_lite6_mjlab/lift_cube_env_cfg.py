@@ -190,7 +190,7 @@ def make_lift_cube_env_cfg() -> ManagerBasedRlEnvCfg:
       weight=-0.01,
       params={
         "max_vel": 0.5,
-        "asset_cfg": SceneEntityCfg("robot", joint_names=(".*",)),
+        "asset_cfg": SceneEntityCfg("robot", joint_names=(".joint*",)),
       },
     ),
   }
