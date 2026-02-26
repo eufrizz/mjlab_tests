@@ -73,7 +73,7 @@ def make_lift_cube_env_cfg() -> ManagerBasedRlEnvCfg:
       debug_vis=True,
       difficulty="dynamic",
       object_pose_range=LiftingCommandCfg.ObjectPoseRangeCfg(
-        x=(0.2, 0.4),
+        x=(0.1, 0.4),
         y=(-0.2, 0.2),
         z=(0.02, 0.05),
         yaw=(-3.14, 3.14),
