@@ -143,10 +143,20 @@ def lite6_lift_cube_env_cfg(
   # own subtree, so cube/terrain contacts do NOT trigger this sensor.
   # MuJoCo already suppresses parent-child contacts at the physics level, so
   # only genuinely dangerous self-collisions reach the sensor.
+  # Use body-mode primaries for arm links only — gripper_left_finger_base and
+  # gripper_right_finger_base are siblings so MuJoCo doesn't filter their contact,
+  # meaning the full-subtree approach fires whenever the gripper opens/closes.
+  # By excluding the gripper bodies from the primary, only dangerous arm-arm
+  # self-collisions terminate the episode.
   self_collision_cfg = ContactSensorCfg(
     name="self_collision",
-    primary=ContactMatch(mode="subtree", pattern="link_base", entity="robot"),
+    primary=ContactMatch(
+      mode="body",
+      pattern="(link1|link2|link3|link4|link5)",
+      entity="robot",
+    ),
     secondary=ContactMatch(mode="subtree", pattern="link_base", entity="robot"),
+    secondary_policy="first",
     fields=("found",),
     reduce="none",
     num_slots=1,
