@@ -12,6 +12,7 @@ from mjlab.managers import (
   ObservationGroupCfg,
   ObservationTermCfg,
 )
+from mjlab.managers.curriculum_manager import CurriculumTermCfg
 from mjlab.managers.reward_manager import RewardTermCfg
 from mjlab.managers.scene_entity_config import SceneEntityCfg
 from mjlab.managers.termination_manager import TerminationTermCfg
@@ -103,14 +104,26 @@ def lite6_lift_cube_env_cfg(
   cfg.rewards["lift_precise"].weight = 1.5
 
   # Reward closing the gripper when the EE is near the cube.
+  # Weight starts at 0 so the policy first learns to reach before being
+  # nudged to close the gripper.  Activated after ~100 PPO iterations.
   cfg.rewards["gripper_close"] = RewardTermCfg(
     func=gripper_close_reward,
-    weight=0.05,
+    weight=0.0,
     params={
       "object_name": "cube",
       "std": 0.1,
       "gripper_actuator_name": "gripper",
       "asset_cfg": SceneEntityCfg("robot", site_names=("end_effector",)),
+    },
+  )
+  cfg.curriculum["gripper_close_weight"] = CurriculumTermCfg(
+    func=manipulation_mdp.reward_weight,
+    params={
+      "reward_name": "gripper_close",
+      "weight_stages": [
+        {"step": 0, "weight": 0.0},
+        {"step": 100 * 24, "weight": 0.1},
+      ],
     },
   )
 
