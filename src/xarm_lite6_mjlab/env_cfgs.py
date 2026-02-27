@@ -28,7 +28,7 @@ if TYPE_CHECKING:
 _DEFAULT_ASSET_CFG = SceneEntityCfg("robot")
 
 
-def get_cube_spec(cube_size: float = 0.014, mass: float = 0.05) -> mujoco.MjSpec:
+def get_cube_spec(cube_size: float = 0.015, mass: float = 0.05) -> mujoco.MjSpec:
   spec = mujoco.MjSpec()
   body = spec.worldbody.add_body(name="cube")
   body.add_freejoint(name="cube_joint")
@@ -38,6 +38,9 @@ def get_cube_spec(cube_size: float = 0.014, mass: float = 0.05) -> mujoco.MjSpec
     size=(cube_size,) * 3,
     mass=mass,
     rgba=(0.8, 0.2, 0.2, 1.0),
+    solimp=(0.95, 0.99, 0.001, 0.5, 2),
+    solref=(0.005, 1),
+    friction=(2.0, 5e-3, 1e-4)
   )
   return spec
 
