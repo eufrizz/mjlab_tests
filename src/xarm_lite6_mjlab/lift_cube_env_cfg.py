@@ -246,7 +246,7 @@ def make_lift_cube_env_cfg() -> ManagerBasedRlEnvCfg:
         timestep=0.005,
         iterations=10,
         ls_iterations=20,
-        impratio=10,
+        impratio=30,
         cone="elliptic",
       ),
     ),

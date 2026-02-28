@@ -42,6 +42,9 @@ parser.add_argument("model_path", nargs="?", default=None, help="Path to compile
 parser.add_argument("--no-cube", action="store_true", help="Don't add the cube to the scene")
 parser.add_argument("--contacts", action="store_true", help="Print contacts")
 parser.add_argument("--lift", action="store_true", help="Execute lift and quit")
+parser.add_argument("--video", metavar="PATH", default=None, help="Record to video (e.g. --video out.mp4)")
+parser.add_argument("--fps", type=int, default=25, help="Video frame rate (default: 25)")
+parser.add_argument("--res", nargs=2, type=int, default=[1280, 720], metavar=("W", "H"), help="Video resolution (default: 1280 720)")
 args = parser.parse_args()
 
 if args.model_path is None:
@@ -113,7 +116,20 @@ steps = 20000
 control = np.tile(home_pos, (steps, 1))
 # turn gripper on
 control[500:, -1] = [1]
+# lift
 control[1000:, 2] = 1.5
+
+renderer = None
+frames = []
+frame_interval = 1  # steps between captured frames
+if args.video:
+    import mediapy as media
+    w, h = args.res
+    model.vis.global_.offwidth = w
+    model.vis.global_.offheight = h
+    renderer = mujoco.Renderer(model, height=h, width=w)
+    frame_interval = max(1, round(1.0 / (args.fps * model.opt.timestep)))
+    print(f"Recording {w}×{h} @ {args.fps} fps → {args.video}  (every {frame_interval} steps)")
 
 with mujoco.viewer.launch_passive(model, data) as v:
     # Track the end-effector body
@@ -121,9 +137,9 @@ with mujoco.viewer.launch_passive(model, data) as v:
     if site_id >= 0:
         v.cam.type = mujoco.mjtCamera.mjCAMERA_TRACKING
         v.cam.trackbodyid = model.site_bodyid[site_id]
-        v.cam.distance = 1.2
-        v.cam.azimuth = 180.0
-        v.cam.elevation = -20.0
+        v.cam.distance = 0.3
+        v.cam.azimuth = 170.0
+        v.cam.elevation = 0.0
 
     step = 0
     while v.is_running():
@@ -131,8 +147,17 @@ with mujoco.viewer.launch_passive(model, data) as v:
             data.ctrl[:7] = control[min(step, steps-1)]
         mujoco.mj_step(model, data)
         v.sync()
+        if renderer is not None and step % frame_interval == 0:
+            renderer.update_scene(data, camera=v.cam)
+            frames.append(renderer.render())
         if args.contacts:
             print_contacts(model, data, step)
         if args.lift and step >= steps - 1:
             break
         step += 1
+
+    if frames:
+        print(f"Writing {len(frames)} frames...")
+        media.write_video(args.video, frames, fps=args.fps)
+        renderer.close()
+        print(f"Saved → {args.video}")

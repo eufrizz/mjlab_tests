@@ -38,9 +38,8 @@ def get_cube_spec(cube_size: float = 0.015, mass: float = 0.05) -> mujoco.MjSpec
     size=(cube_size,) * 3,
     mass=mass,
     rgba=(0.8, 0.2, 0.2, 1.0),
-    solimp=(0.95, 0.99, 0.001, 0.5, 2),
-    solref=(0.005, 1),
-    friction=(2.0, 5e-3, 1e-4)
+    friction=(1.2, 5e-3, 1e-4),
+    condim=6
   )
   return spec
 
