@@ -113,7 +113,7 @@ def lite6_lift_cube_env_cfg(
     weight=0.0,
     params={
       "object_name": "cube",
-      "std": 0.1,
+      "std": 0.05,
       "gripper_actuator_name": "gripper",
       "asset_cfg": SceneEntityCfg("robot", site_names=("end_effector",)),
     },
