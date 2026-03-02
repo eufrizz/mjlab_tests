@@ -189,7 +189,7 @@ def make_lift_cube_env_cfg() -> ManagerBasedRlEnvCfg:
       func=manipulation_mdp.joint_velocity_hinge_penalty,
       weight=-0.01,
       params={
-        "max_vel": 0.1,
+        "max_vel": 0.0,
         "asset_cfg": SceneEntityCfg("robot", joint_names=(".joint*",)),
       },
     ),
