@@ -109,26 +109,26 @@ def lite6_lift_cube_env_cfg(
   # Reward closing the gripper when the EE is near the cube.
   # Weight starts at 0 so the policy first learns to reach before being
   # nudged to close the gripper.  Activated after ~100 PPO iterations.
-  cfg.rewards["gripper_close"] = RewardTermCfg(
-    func=gripper_close_reward,
-    weight=0.0,
-    params={
-      "object_name": "cube",
-      "std": 0.05,
-      "gripper_actuator_name": "gripper",
-      "asset_cfg": SceneEntityCfg("robot", site_names=("end_effector",)),
-    },
-  )
-  cfg.curriculum["gripper_close_weight"] = CurriculumTermCfg(
-    func=manipulation_mdp.reward_weight,
-    params={
-      "reward_name": "gripper_close",
-      "weight_stages": [
-        {"step": 0, "weight": 0.0},
-        {"step": 200 * 24, "weight": 0.02},
-      ],
-    },
-  )
+  # cfg.rewards["gripper_close"] = RewardTermCfg(
+  #   func=gripper_close_reward,
+  #   weight=0.0,
+  #   params={
+  #     "object_name": "cube",
+  #     "std": 0.05,
+  #     "gripper_actuator_name": "gripper",
+  #     "asset_cfg": SceneEntityCfg("robot", site_names=("end_effector",)),
+  #   },
+  # )
+  # cfg.curriculum["gripper_close_weight"] = CurriculumTermCfg(
+  #   func=manipulation_mdp.reward_weight,
+  #   params={
+  #     "reward_name": "gripper_close",
+  #     "weight_stages": [
+  #       {"step": 0, "weight": 0.0},
+  #       {"step": 200 * 24, "weight": 0.02},
+  #     ],
+  #   },
+  # )
 
   # Fingertip geom names in the Lite6 XML.
   fingertip_geoms = "(gripper_left_finger|gripper_right_finger)"
