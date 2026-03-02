@@ -101,9 +101,9 @@ def lite6_lift_cube_env_cfg(
   )
   cfg.rewards["lift"].params["asset_cfg"].site_names = ("end_effector",)
   cfg.rewards["lift"].params["reaching_std"] = 0.1
-  cfg.rewards["lift"].weight = 1
+  cfg.rewards["lift"].weight = 2
 
-  cfg.rewards["lift_precise"].params["std"] = 0.2
+  cfg.rewards["lift_precise"].params["std"] = 0.1
   cfg.rewards["lift_precise"].weight = 2
 
   # Reward closing the gripper when the EE is near the cube.
