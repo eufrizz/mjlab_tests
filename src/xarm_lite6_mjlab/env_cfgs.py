@@ -103,7 +103,8 @@ def lite6_lift_cube_env_cfg(
   cfg.rewards["lift"].params["reaching_std"] = 0.1
   cfg.rewards["lift"].weight = 1
 
-  cfg.rewards["lift_precise"].weight = 1
+  cfg.rewards["lift_precise"].params["std"] = 0.2
+  cfg.rewards["lift_precise"].weight = 10
 
   # Reward closing the gripper when the EE is near the cube.
   # Weight starts at 0 so the policy first learns to reach before being
@@ -124,7 +125,7 @@ def lite6_lift_cube_env_cfg(
       "reward_name": "gripper_close",
       "weight_stages": [
         {"step": 0, "weight": 0.0},
-        {"step": 200 * 24, "weight": 0.05},
+        {"step": 200 * 24, "weight": 0.02},
       ],
     },
   )
