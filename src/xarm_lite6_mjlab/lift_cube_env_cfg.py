@@ -189,7 +189,7 @@ def make_lift_cube_env_cfg() -> ManagerBasedRlEnvCfg:
       func=manipulation_mdp.joint_velocity_hinge_penalty,
       weight=-0.01,
       params={
-        "max_vel": 0.5,
+        "max_vel": 0.1,
         "asset_cfg": SceneEntityCfg("robot", joint_names=(".joint*",)),
       },
     ),
@@ -210,8 +210,8 @@ def make_lift_cube_env_cfg() -> ManagerBasedRlEnvCfg:
         "reward_name": "joint_vel_hinge",
         "weight_stages": [
           {"step": 0, "weight": -0.01},
-          {"step": 500 * 24, "weight": -0.1},
-          {"step": 1000 * 24, "weight": -1.0},
+          {"step": 400 * 24, "weight": -0.1},
+          {"step": 8000 * 24, "weight": -1.0},
         ],
       },
     ),
