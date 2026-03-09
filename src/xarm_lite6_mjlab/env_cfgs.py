@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from copy import deepcopy
 from typing import TYPE_CHECKING, Any, Literal
 
 import torch
@@ -254,6 +255,30 @@ def lite6_lift_cube_vision_env_cfg(
       "asset_cfg": SceneEntityCfg("robot", site_names=("end_effector",)),
     },
     # NOTE: No noise for goal position.
+  )
+
+  return cfg
+
+
+def lite6_lift_cube_vision_distillation_env_cfg(
+  cam_type: Literal["rgb", "depth"],
+  play: bool = False,
+) -> ManagerBasedRlEnvCfg:
+  """Vision env with an added 'privileged' obs group for distillation.
+
+  The 'privileged' group mirrors the state-based actor observations
+  (joint_pos, joint_vel, ee_to_cube, cube_to_goal, actions) so a teacher
+  checkpoint trained on the state env can be loaded and used directly.
+  The student uses ('actor', 'camera'); the teacher uses ('privileged',).
+  """
+  cfg = lite6_lift_cube_vision_env_cfg(cam_type=cam_type, play=play)
+
+  # Build privileged group from a fresh state env so we get the full terms
+  # (ee_to_cube and cube_to_goal were already stripped from the vision actor).
+  state_cfg = lite6_lift_cube_env_cfg(play=play)
+  cfg.observations["privileged"] = ObservationGroupCfg(
+    terms=deepcopy(state_cfg.observations["actor"].terms),
+    enable_corruption=True,
   )
 
   return cfg

@@ -1,7 +1,16 @@
 from mjlab.tasks.registry import register_mjlab_task
 
-from .env_cfgs import lite6_lift_cube_env_cfg, lite6_lift_cube_vision_env_cfg
-from .rl_cfg import lite6_lift_cube_ppo_runner_cfg, lite6_lift_cube_vision_ppo_runner_cfg
+from .env_cfgs import (
+  lite6_lift_cube_env_cfg,
+  lite6_lift_cube_vision_distillation_env_cfg,
+  lite6_lift_cube_vision_env_cfg,
+)
+from .rl_cfg import (
+  lite6_lift_cube_ppo_runner_cfg,
+  lite6_lift_cube_vision_distillation_runner_cfg,
+  lite6_lift_cube_vision_ppo_runner_cfg,
+)
+from .runners import MjlabDistillationRunner
 
 register_mjlab_task(
   task_id="Mjlab-Lift-Cube-Lite6",
@@ -22,4 +31,12 @@ register_mjlab_task(
   env_cfg=lite6_lift_cube_vision_env_cfg(cam_type="depth"),
   play_env_cfg=lite6_lift_cube_vision_env_cfg(cam_type="depth", play=True),
   rl_cfg=lite6_lift_cube_vision_ppo_runner_cfg(),
+)
+
+register_mjlab_task(
+  task_id="Mjlab-Lift-Cube-Lite6-Rgb-Distill",
+  env_cfg=lite6_lift_cube_vision_distillation_env_cfg(cam_type="rgb"),
+  play_env_cfg=lite6_lift_cube_vision_distillation_env_cfg(cam_type="rgb", play=True),
+  rl_cfg=lite6_lift_cube_vision_distillation_runner_cfg(),
+  runner_cls=MjlabDistillationRunner,
 )
