@@ -85,7 +85,9 @@ def main() -> None:
   # Load teacher weights from the PPO checkpoint.
   # Distillation.load() automatically maps actor_state_dict -> teacher when
   # load_cfg={"teacher": True} is passed.
-  runner.load(str(teacher_path), load_cfg={"teacher": True}, strict=True, map_location=cfg.device)
+  # strict=False: the PPO actor is stochastic (has "std" in state_dict) but the
+  # teacher model is non-stochastic, so strict=True would raise an unexpected-key error.
+  runner.load(str(teacher_path), load_cfg={"teacher": True}, strict=False, map_location=cfg.device)
 
   runner.learn(num_learning_iterations=train_cfg.max_iterations)
 

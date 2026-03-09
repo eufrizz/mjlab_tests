@@ -10,7 +10,7 @@ from .rl_cfg import (
   lite6_lift_cube_vision_distillation_runner_cfg,
   lite6_lift_cube_vision_ppo_runner_cfg,
 )
-from .runners import MjlabDistillationRunner
+from .runners import MjlabDistillationRunner, MjlabStudentOnPolicyRunner
 
 register_mjlab_task(
   task_id="Mjlab-Lift-Cube-Lite6",
@@ -39,4 +39,12 @@ register_mjlab_task(
   play_env_cfg=lite6_lift_cube_vision_distillation_env_cfg(cam_type="rgb", play=True),
   rl_cfg=lite6_lift_cube_vision_distillation_runner_cfg(),
   runner_cls=MjlabDistillationRunner,
+)
+
+register_mjlab_task(
+  task_id="Mjlab-Lift-Cube-Lite6-Rgb-Student",
+  env_cfg=lite6_lift_cube_vision_env_cfg(cam_type="rgb"),
+  play_env_cfg=lite6_lift_cube_vision_env_cfg(cam_type="rgb", play=True),
+  rl_cfg=lite6_lift_cube_vision_ppo_runner_cfg(),
+  runner_cls=MjlabStudentOnPolicyRunner,
 )
