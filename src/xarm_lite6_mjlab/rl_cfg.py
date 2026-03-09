@@ -151,8 +151,8 @@ def lite6_lift_cube_vision_distillation_runner_cfg() -> RslRlDistillationRunnerC
     ),
     algorithm=RslRlDistillationAlgorithmCfg(
       num_learning_epochs=1,
-      gradient_length=15,
-      learning_rate=1e-3,
+      gradient_length=1, # for 8192 envs
+      learning_rate=5e-4,
       max_grad_norm=1.0,
       loss_type="mse",
       optimizer="adam",
@@ -162,7 +162,7 @@ def lite6_lift_cube_vision_distillation_runner_cfg() -> RslRlDistillationRunnerC
       "teacher": ("privileged",),
     },
     experiment_name="lite6_lift_cube_rgb_distill",
-    save_interval=100,
+    save_interval=50,
     num_steps_per_env=24,
     max_iterations=3_000,
   )
