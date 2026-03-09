@@ -10,9 +10,8 @@ class MjlabDistillationRunner(DistillationRunner):
       MLPModel doesn't receive an unexpected kwarg (mirrors MjlabOnPolicyRunner).
     - save() stores only student_state_dict (no teacher weights) so checkpoints
       are small and directly loadable by MjlabStudentOnPolicyRunner / play.py.
-    - load() remaps play.py's load_cfg={"actor": True} to None so Distillation.load()
-      auto-detects the checkpoint type, and relaxes strict to handle the stochastic
-      PPO actor's "std" key being absent in the non-stochastic teacher model.
+    - load() peeks at the checkpoint to resolve play.py's load_cfg={"actor": True}
+      to the right Distillation.load() cfg based on which keys are present.
     """
 
     def __init__(self, env, train_cfg, log_dir=None, device="cpu"):
@@ -35,15 +34,28 @@ class MjlabDistillationRunner(DistillationRunner):
 
     def load(self, path, load_cfg=None, strict=True, map_location=None):
         # play.py always passes load_cfg={"actor": True}, which Distillation.load()
-        # doesn't understand. Pass None instead so Distillation.load() auto-detects
-        # the checkpoint type from its keys:
-        #   - distillation checkpoint (has student_state_dict) → loads student + teacher
-        #   - PPO checkpoint (has actor_state_dict)            → loads as teacher only
-        # Also relax strict: a PPO actor is stochastic (has "std" in state_dict) but
-        # our teacher model is non-stochastic, so strict=True would raise a KeyError.
+        # doesn't understand. Peek at the checkpoint to pick the right load_cfg:
+        #
+        #   student_state_dict only (our save() format)
+        #     → load_cfg={"student": True}  — skip teacher (not saved)
+        #
+        #   student_state_dict + teacher_state_dict (old full format)
+        #     → load_cfg=None  — let Distillation.load() auto-detect both
+        #
+        #   actor_state_dict only (PPO checkpoint used as teacher)
+        #     → load_cfg=None, strict=False  — auto-detects as teacher;
+        #       strict=False because PPO actor has "std" but teacher is non-stochastic
         if load_cfg == {"actor": True}:
-            load_cfg = None
-            strict = False
+            peeked = torch.load(path, map_location=map_location, weights_only=False)
+            has_student = "student_state_dict" in peeked
+            has_teacher = "teacher_state_dict" in peeked or "actor_state_dict" in peeked
+            if has_student and not has_teacher:
+                load_cfg = {"student": True}
+            elif has_student:
+                load_cfg = None
+            else:
+                load_cfg = None
+                strict = False
         return super().load(path, load_cfg=load_cfg, strict=strict, map_location=map_location)
 
 
